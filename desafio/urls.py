@@ -8,5 +8,6 @@ app_name = 'desafio'
 urlpatterns = [
    path('', views.inicio, name='desafio'),
    path('enviado/', views.inicio, name='enviado'),
-   path('enviar_arquivo/', EnvioArquivo.as_view(), name='enviar_arquivo')
+   path('enviar_arquivo/', EnvioArquivo.as_view(), name='enviar_arquivo'),
+   path('decompor_arquivo/', views.decompor_arquivo, name='decompor_arquivo')
 ]

@@ -18,3 +18,4 @@ class Caracteres(models.Model):
     arquivo = models.ForeignKey(ModelFormArquivo, default='1', on_delete=models.CASCADE)
     caractere = models.CharField(max_length=999999)
     ativo = models.BooleanField('Ativo', default=True)
+    sequencia = models.IntegerField('Sequencia')
