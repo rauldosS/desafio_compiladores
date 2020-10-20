@@ -1,0 +1,62 @@
+{% extends "base/index.html" %}
+{% block titulo %}Arquivo - {{ arquivo.titulo }}{% endblock %}
+
+{% block conteudo %}
+<div class="container mt-3">
+    <div class='shadow md-shadow-none rounded-lg h-100 overflow-hidden'>
+        <div class='h-100 overflow-y-auto p-3'>
+            <div class='p-2 d-flex border-bottom mb-2'>
+                <h1 class='p-1 m-3 '><i class="fas fa-file-signature"></i></h1>
+                <span class='font-weight-normal my-auto' style='font-size: 1.5rem;'>Detalhes do Arquivo</span>
+            </div>
+            <div class="row d-flex align-items-center p-3">
+                <div class="col-12 col-md-6">
+                    <h5 class='text-truncate'> <i class="fas fa-star pr-3 pl-0 "></i>{{ arquivo.titulo }} <span class="badge badge-primary">Versão {{ arquivo.versao }}</span></h5>
+                </div>
+                <div class="col-12 col-md-6 text-right">
+                    <a class="btn btn-primary btn-sm" href='{% url "desafio:decompor_arquivo" arquivo.id %}'><i class="fas fa-th-large pr-2"></i>Decompor arquivo na sequência de caracteres ASCII individuais</a>
+                </div>
+            </div>
+
+            <div class="dropdown-divider pt-3"></div>
+
+            <a href="" data-content='Sair' data-toggle="modal" data-target="#logout" class="item-menu-mobile m-1"> <i class="fas fa-power-off fa-lg text-white"></i></a>
+
+            <form action="">
+                <div class="form-group">
+                    <label for="titulo">Título do arquivo</label>
+                    <input type="text" value='{{ arquivo.titulo }}' class="form-control" disabled id="titulo" placeholder="Título">
+                </div>
+
+                <div class="form-group">
+                    <label for="caracteresASCII">Caracteres ASCII (sequencia - caractere)</label>
+                    <select multiple class="form-control" id="caracteresASCII">
+                        {% for caractere in caracteres %}
+                        <option>{{ caractere.sequencia }} - {{ caractere.caractere }} - {{ caractere.palavra }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="conteudo">Conteúdo</label>
+                    <textarea class="form-control" id="conteudo" rows="3">{{ arquivo.conteudo }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="caracteresASCII">Sequência de linhas (linha - conteúdo)</label>
+                    <select multiple class="form-control" id="caracteresASCII">
+                        {% for linha in linhas %}
+                        <option>{{ linha.linha }} - {{ linha.conteudo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    
+</script>
+{% endblock %}
