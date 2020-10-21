@@ -54,13 +54,14 @@ def arquivo(request, id=1):
 
 def decompor_arquivo(request, id=1):
     arquivo_modelo = ModelFormArquivo.objects.get(id=id)
-    caminho_arquivo = arquivo_modelo.arquivo
+    caracteres_removidos = Caracteres.objects.filter(arquivo=arquivo_modelo, ativo=False).order_by('sequencia')
+    
     arquivo = open(str(arquivo_modelo.arquivo), 'r', encoding='utf-8-sig')
     conteudo = arquivo.read()
     arquivo.close()
 
     atualizar_arquivo(id, conteudo, arquivo_modelo.versao + 1)
-    decompor_caracteres(arquivo_modelo, conteudo)
+    decompor_caracteres(arquivo_modelo, conteudo, caracteres_removidos)
 
     atualizar_linhas(arquivo_modelo)
 
@@ -80,17 +81,19 @@ def atualizar_arquivo(id, conteudo, versao):
 def decompor_caracteres(arquivo, conteudo, caracteres_removidos):
     caracteres_arquivo_false = []
     for caractere in Caracteres.objects.filter(arquivo=arquivo, ativo=False):
+        print(f'Decompondo caractere: { caractere }')
         caracteres_arquivo_false.append([caractere.sequencia, str(caractere.palavra)])
 
-    Caracteres.objects.filter(arquivo=arquivo).delete()
-    
+    atualizar_caractere(Caracteres.objects.filter(arquivo=arquivo))
+
     sequencia = 1
     for palavra in str.split(conteudo):
+        print(f'Decompondo palavra: { palavra }')
         ativo = True
 
         for caractere in caracteres_arquivo_false:
-            if (palavra in caractere[1] and sequencia == caractere[0]) or (palavra in caracteres_removidos[1]):
-                ativo = False        
+            if (palavra in caractere[1] and sequencia == caractere[0]):
+                ativo = False
 
         ascII = ''.join(str(ord(c)) for c in palavra)
         registro = Caracteres.objects.create(
@@ -102,6 +105,30 @@ def decompor_caracteres(arquivo, conteudo, caracteres_removidos):
         )
         sequencia += 1
 
+    if caracteres_removidos:
+        remover_caractere(caracteres_removidos, arquivo)
+    
+    # Deletar caracteres da versão 2
+    Caracteres.objects.filter(arquivo=arquivo, caractere='atualizado').delete()
+
+def atualizar_caractere(objetos):
+    for caractere in objetos:
+        print(f'Atualizando arquivo: { caractere }')
+        caractere.caractere = 'atualizado'
+        caractere.save()
+
+def remover_caractere(caracteres, arquivo):
+    caracteres_removidos = []
+
+    for remover in caracteres:
+        caractere = Caracteres.objects.get(~Q(id=remover[0]), arquivo, sequencia=remover[1])
+        caracteres_removidos.append(caractere)
+
+    for caractere in caracteres_removidos:
+        print(f'Removendo caractere: { caractere }')
+        caractere.ativo = False
+        print(caractere.save())
+
 def atualizar_linhas(arquivo):
     Linhas.objects.filter(arquivo=arquivo).delete()
 
@@ -110,6 +137,7 @@ def atualizar_linhas(arquivo):
 
         contagem_linha = 1
         for linha in linhas:
+            print(f'Atualizando linhas: { linha }')
             # print(f'Linha {contagem_linha}: {linha.strip()}')
 
             registro = Linhas.objects.create(
@@ -139,12 +167,9 @@ def atualizar_arquivo_completo(request):
 
         # Atualiza arquivos
         # atualizar_arquivo(int(json_arquivo['id'], json_arquivo['conteudo'], versao))
-        
 
         return redirect('desafio:arquivo', id=arquivo_modelo.id)
-
-def remover_caractere(caractere):
-    pass
+    
 
 def gerar_arquivo(arquivo):
     pass
