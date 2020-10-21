@@ -6,6 +6,7 @@ body {
     background-repeat: no-repeat;*/
 
   /* background: linear-gradient(180deg, rgba(248, 122, 0, 8.96) 14.15%, rgba(255, 255, 255, 0) 40.62%), #F2F2F2; */
+  overflow: visible !important;
 }
 html {
   /* background-color: #F2F2F2; */
@@ -570,4 +571,35 @@ label[name="checkbox"]::before {
 .card-control {
   max-width: 18rem;
   min-width: 18rem;
+}
+
+.breadcrumb {
+  position: inherit;
+  margin-bottom: -28px !important;
+}
+
+.chips {
+  border-radius: 0.25rem !important;
+  border: 1px solid #ced4da;
+  padding: 1%;
+}
+
+.chip {
+  display: inline-block;
+  height: 32px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(0,0,0,0.6);
+  line-height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
+  background-color: #e4e4e4;
+  margin-bottom: 5px;
+  margin-right: 5px;
+}
+
+.chip:active, .chip:focus {
+  outline: none;
+  background-color: #009b3a;
+  color: #FFF;
 }

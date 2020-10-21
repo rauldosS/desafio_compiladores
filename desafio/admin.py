@@ -8,7 +8,8 @@ class ArquivoAdmin(admin.ModelAdmin):
 
 @admin.register(Caracteres)
 class ArquivoAdmin(admin.ModelAdmin):
-    list_display = ['id', 'arquivo', 'ativo', 'caractere', 'versao']
+    list_display = ['id', 'arquivo', 'ativo', 'caractere', 'palavra', 'versao']
+    list_filter = ['ativo', 'versao']
 
 @admin.register(Linhas)
 class ArquivoAdmin(admin.ModelAdmin):

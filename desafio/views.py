@@ -4,6 +4,9 @@ from django.shortcuts import render, redirect
 from .models import ModelFormArquivo, Caracteres, Linhas
 from .forms import FormularioArquivo
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView
+from django.db.models import Q
+import json
+from django.core.files.base import ContentFile
 
 # Create your views here.
 class EnvioArquivo(CreateView):
@@ -18,7 +21,7 @@ def inicio(request):
 
     return render(request, 'desafio/index.html', {'arquivos': arquivos})
 
-def envio_arquivo(request):
+def enviar_arquivo(request):
     if request.method == 'POST':
         form = ModelFormArquivo(request.POST, request.FILES)
         if form.is_valid():
@@ -27,37 +30,45 @@ def envio_arquivo(request):
             return HttpResponseRedirect('/success/url/')
     else:
         form = ModelFormArquivo()
-    return render(request, 'envio.html', {'form': form})
+    return render(request, 'enviar_arquivo.html', {'form': form})
 
 def arquivo(request, id=1):
-    arquivo = ModelFormArquivo.objects.get(id=id)
-    caracteres = Caracteres.objects.filter(arquivo=arquivo, versao=arquivo.versao).order_by('sequencia')
-    linhas = Linhas.objects.filter(arquivo=arquivo, versao=arquivo.versao).order_by('linha')
+    arquivo_modelo = ModelFormArquivo.objects.get(id=id)
+    caracteres = Caracteres.objects.filter(arquivo=arquivo_modelo, ativo=True).order_by('sequencia')
+    caracteres_removidos = Caracteres.objects.filter(arquivo=arquivo_modelo, ativo=False).order_by('sequencia')
+    linhas = Linhas.objects.filter(arquivo=arquivo_modelo).order_by('linha')
+
+    arquivo = open(str(arquivo_modelo.arquivo), 'r', encoding='utf-8-sig')
+    conteudo = arquivo.read()
+    arquivo.close()
 
     dados = {
-        'arquivo': arquivo,
+        'arquivo': arquivo_modelo,
+        'conteudo': conteudo,
         'caracteres': caracteres,
-        'linhas': linhas
+        'linhas': linhas,
+        'caracteres_removidos': caracteres_removidos
     }
 
     return render(request, 'desafio/arquivo/arquivo.html', dados)
 
 def decompor_arquivo(request, id=1):
-    arquivo = ModelFormArquivo.objects.get(id=id)
-    caminho_arquivo = arquivo.arquivo
+    arquivo_modelo = ModelFormArquivo.objects.get(id=id)
+    caminho_arquivo = arquivo_modelo.arquivo
+    arquivo = open(str(arquivo_modelo.arquivo), 'r', encoding='utf-8-sig')
+    conteudo = arquivo.read()
+    arquivo.close()
 
-    versao = arquivo.versao + 1
+    atualizar_arquivo(id, conteudo, arquivo_modelo.versao + 1)
+    decompor_caracteres(arquivo_modelo, conteudo)
 
-    atualizar_arquivo(id, versao)
-    decompor_caracteres(arquivo, versao)
-    atualizar_linhas(arquivo, versao)
+    atualizar_linhas(arquivo_modelo)
 
-    return redirect('desafio:arquivo', id=arquivo.id)
+    return redirect('desafio:arquivo', id=arquivo_modelo.id)
 
-def atualizar_arquivo(id, versao):
+def atualizar_arquivo(id, conteudo, versao):
     try:
         registro = ModelFormArquivo.objects.get(id=id)
-        conteudo = open(str(registro.arquivo), 'r').read()
 
         registro.conteudo = conteudo,
         registro.versao = versao
@@ -66,44 +77,77 @@ def atualizar_arquivo(id, versao):
     except:
         print('Erro ao atualizar arquivo')
 
-def decompor_caracteres(arquivo, versao):
-    conteudo = open(str(arquivo.arquivo), 'r').read()
+def decompor_caracteres(arquivo, conteudo, caracteres_removidos):
+    caracteres_arquivo_false = []
+    for caractere in Caracteres.objects.filter(arquivo=arquivo, ativo=False):
+        caracteres_arquivo_false.append([caractere.sequencia, str(caractere.palavra)])
+
+    Caracteres.objects.filter(arquivo=arquivo).delete()
+    
     sequencia = 1
     for palavra in str.split(conteudo):
+        ativo = True
+
+        for caractere in caracteres_arquivo_false:
+            if (palavra in caractere[1] and sequencia == caractere[0]) or (palavra in caracteres_removidos[1]):
+                ativo = False        
+
         ascII = ''.join(str(ord(c)) for c in palavra)
         registro = Caracteres.objects.create(
             arquivo = arquivo, 
             caractere = ascII,
             sequencia = sequencia,
             palavra = palavra,
-            versao = versao, 
-        )   
-        sequencia += 1 
-
-        try:
-            registro.save()
-        except registro:
-            pass
-
-def atualizar_linhas(arquivo, versao):
-    linhas_arquivo = arquivo.arquivo.readlines()
-    contagem_linha = 1
-    for linha in linhas_arquivo:
-        print(f'Linha {contagem_linha}: {linha.strip()}')
-
-        registro = Linhas.objects.create(
-            arquivo=arquivo,
-            conteudo=linha.strip(),
-            linha=contagem_linha,
-            versao=versao
+            ativo = ativo
         )
+        sequencia += 1
 
-        contagem_linha += 1
+def atualizar_linhas(arquivo):
+    Linhas.objects.filter(arquivo=arquivo).delete()
 
-        try:
+    with open(str(arquivo.arquivo), 'r', errors='replace', encoding='utf-8-sig') as a:
+        linhas = a.readlines()
+
+        contagem_linha = 1
+        for linha in linhas:
+            # print(f'Linha {contagem_linha}: {linha.strip()}')
+
+            registro = Linhas.objects.create(
+                arquivo=arquivo,
+                conteudo=linha.strip(),
+                linha=contagem_linha
+            )
+
+            contagem_linha += 1
+
             registro.save()
-        except registro:
-            pass
+
+def atualizar_arquivo_completo(request):
+    if request.method == "POST":
+        json_arquivo = json.loads(request.POST.get('arquivo', ''))
+        arquivo_modelo = ModelFormArquivo.objects.get(id=int(json_arquivo['id']))
+        versao = arquivo_modelo.versao + 1
+        caracteres_removidos = json_arquivo['chips_selecionados']
+
+        # Atualiza caracteres da nova versão
+        arquivo = open(str(arquivo_modelo.arquivo), 'r', encoding='utf-8-sig')
+        conteudo = arquivo.read()
+        arquivo.close()
+
+        decompor_caracteres(arquivo_modelo, conteudo, caracteres_removidos)
+        # atualizar_linhas(arquivo_modelo)
+
+        # Atualiza arquivos
+        # atualizar_arquivo(int(json_arquivo['id'], json_arquivo['conteudo'], versao))
+        
+
+        return redirect('desafio:arquivo', id=arquivo_modelo.id)
+
+def remover_caractere(caractere):
+    pass
+
+def gerar_arquivo(arquivo):
+    pass
 
 def arquivos_enviados(request):
     arquivos = ModelFormArquivo.objects.all()

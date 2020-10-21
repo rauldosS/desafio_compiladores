@@ -1,8 +1,18 @@
 {% extends "base/index.html" %}
 {% block titulo %}Arquivo - {{ arquivo.titulo }}{% endblock %}
 
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'desafio:inicio' %}">Início</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'desafio:inicio' %}">Arquivos enviados</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Detalhes do Arquivo - {{ arquivo.titulo }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block conteudo %}
-<div class="container mt-3">
+<div class="container mt-3 mb-3">
     <div class='shadow md-shadow-none rounded-lg h-100 overflow-hidden'>
         <div class='h-100 overflow-y-auto p-3'>
             <div class='p-2 d-flex border-bottom mb-2'>
@@ -14,7 +24,8 @@
                     <h5 class='text-truncate'> <i class="fas fa-star pr-3 pl-0 "></i>{{ arquivo.titulo }} <span class="badge badge-primary">Versão {{ arquivo.versao }}</span></h5>
                 </div>
                 <div class="col-12 col-md-6 text-right">
-                    <a class="btn btn-primary btn-sm" href='{% url "desafio:decompor_arquivo" arquivo.id %}'><i class="fas fa-th-large pr-2"></i>Decompor arquivo na sequência de caracteres ASCII individuais</a>
+                    <a class="btn btn-primary btn-sm" href='{% url "desafio:decompor_arquivo" arquivo.id|safe %}'><i class="fas fa-th-large pr-2"></i>Decompor arquivo na sequência de caracteres ASCII individuais</a>
+                    <a class="btn btn-success btn-sm" href='{% url "desafio:decompor_arquivo" arquivo.id|safe %}'><i class="fas fa-th-large pr-2"></i>Gerar novo arquivo</a>
                 </div>
             </div>
 
@@ -25,7 +36,7 @@
             <form action="">
                 <div class="form-group">
                     <label for="titulo">Título do arquivo</label>
-                    <input type="text" value='{{ arquivo.titulo }}' class="form-control" disabled id="titulo" placeholder="Título">
+                    <input type="text" value='{{ arquivo.titulo }}' class="form-control" id="titulo" placeholder="Título">
                 </div>
 
                 <div class="form-group">
@@ -36,9 +47,9 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" contenteditable="true">
                     <label for="conteudo">Conteúdo</label>
-                    <textarea class="form-control" id="conteudo" rows="3">{{ arquivo.conteudo }}</textarea>
+                    <textarea class="form-control" id="conteudo" rows="3" contenteditable="true">{{ conteudo }}</textarea>
                 </div>
 
                 <div class="form-group">
@@ -49,6 +60,30 @@
                         {% endfor %}
                     </select>
                 </div>
+
+                <label for="caracteresASCII">Apagar caracteres</label>
+                <div class="chips chips-placeholder">
+                    {% for caractere in caracteres %}
+                        <div class="chip" tabindex="1" id="chip{{ caractere.id|safe }}">
+                            {{ caractere.palavra }}
+                            <i class="fas fa-times" onclick="apagar_chip('chip{{ caractere.id|safe }}', '{{ caractere.sequencia|safe }}')"></i>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <label for="caracteresASCII">Caracteres removidos</label>
+                <div id="chips-removidos" class="chips chips-placeholder">
+                    {% for caractere in caracteres_removidos %}
+                        <div class="chip" tabindex="1" id="chip{{ caractere.id|safe }}">
+                            {{ caractere.palavra }}
+                            <i class="fas fa-times"></i>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="p-3 text-right">
+                    <a onclick="atualizar_arquivo({{ arquivo.id|safe }})" class="btn btn-success text-white">Atualizar arquivo</a>
+                </div>
             </form>
         </div>
     </div>
@@ -57,6 +92,81 @@
 
 {% block script %}
 <script>
+    let arquivo = {
+        'id': '{{ arquivo.id|safe }}',
+        'versao': '{{ arquivo.versao }}',
+        'titulo': '',
+        'conteudo': '',
+        'chips_selecionados': [],
+    }
+
+    apagar_chip = (id_chip, sequencia) => {
+        const chip = document.getElementById(id_chip)
     
+        const id = parseInt(id_chip.replace('chip', ''))
+        arquivo['chips_selecionados'].push([id, Number(sequencia)])
+        console.log(arquivo['chips_selecionados'])
+        
+        chip_removido(id_chip, chip.textContent)
+        chip.style.display = 'none'
+    }
+
+    chip_removido = (id, valor) => {
+        const chips_removidos = document.getElementById('chips-removidos')
+        const div = document.createElement('div')
+        const i = document.createElement('i')
+
+        div.setAttribute('class', 'chip')
+        div.setAttribute('tabindex', '1')
+        div.setAttribute('id', `chip-{id}`)
+        div.textContent = valor
+
+        i.setAttribute('class', 'fas fa-times')
+        
+        div.append(i)
+        chips_removidos.append(div)
+    }
+
+    atualizar_arquivo = (id_arquivo) => {
+        var xhttp = new XMLHttpRequest()
+
+        xhttp.open("POST", "/atualizar_arquivo_completo/", true)
+
+        xhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+        xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+        xhttp.setRequestHeader("X-CSRFToken", getCookie('csrftoken'))
+
+        xhttp.responseType = 'json'
+        // xhttp.onreadystatechange = function(data) {
+        //     if (this.readyState == 4 && this.status == 200) {
+        //         let json = xhttp.response
+        //         if (json) {
+                    
+        //         }
+        //     }
+        // }
+
+        arquivo['titulo'] = document.getElementById('titulo').value
+        arquivo['conteudo'] = document.getElementById('conteudo').value
+
+        xhttp.send("arquivo=" + JSON.stringify(arquivo))
+    }
+
+    function getCookie(name) {
+        var cookieValue = null;
+
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 </script>
 {% endblock %}
