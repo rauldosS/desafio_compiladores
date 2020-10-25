@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ModelFormArquivo, Caracteres, Linhas, Palavras
+from .models import ModelFormArquivo, Caracteres, Linhas, Palavras, Numeros
 
 # Register your models here.
 @admin.register(ModelFormArquivo)
@@ -19,3 +19,7 @@ class PalavraAdmin(admin.ModelAdmin):
 @admin.register(Linhas)
 class LinhasAdmin(admin.ModelAdmin):
     list_display = ['id', 'arquivo', 'linha', 'versao']
+
+@admin.register(Numeros)
+class Número(admin.ModelAdmin):
+    list_display = ['id', 'numero', 'inteiro', 'decimal']

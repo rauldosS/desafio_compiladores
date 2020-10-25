@@ -4,6 +4,12 @@
 
 3) (listagem numerada) - O programa deve ler o arquivo gerado e criar a partir dele uma listagem do texto, acrescido do número sequencial de suas linhas.
 
+5) (Conversão numérica) - Desenvolva programas de conversão numérica de entrada e de saída de dados que efetuem a leitura dos dados escritos em diversas bases numéricas e armazenem na memória os valores convertidos, denotados em uma notação padrão. Faça o mesmo para a saída de dados, escolhendo a base e o formato de saída (número de dígitos a imprimir, posição do sinal, etc.)
+
+6) (Tabelas de símbolos e atributos) - Desenvolva um programa que monte uma tabela de símbolos, em que cada símbolo possa se apresentar com um comprimento arbitrário. Construa também procedimentos para ordená-los alfabeticamente, para pesquisar um símbolo específico na tabela, para incluir um elemento adicional, para associar atributos a um dado símbolo etc.
+
+7) (Tabelas de palavras reservadas) - Desenvolva um procedimento de pesquisa em tabelas de conteúdo fixo, tais como as de palavras reservadas e similares.
+
 A atividade pode ser desenvolvida individual ou no máximo em grupos de 3 pessoas.
 
 Pode ser utilizada a linguagem de programação de sua preferência.

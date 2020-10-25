@@ -16,7 +16,7 @@ html {
 .button-bar {
   font-size: 30px;
   text-align: center;
-  background: #009b3a;
+  background: #2980b9;
   
   /* background-color: #F87A00; */
 }
@@ -25,19 +25,19 @@ html {
 }
 
 .button-bar a:nth-child(1).active {
-  color: #009b3a;
+  color: #2980b9;
 }
 .button-bar a:nth-child(2).active {
-  color: #009b3a;
+  color: #2980b9;
 }
 .button-bar a:nth-child(3).active {
-  color: #009b3a;
+  color: #2980b9;
 }
 .button-bar a:nth-child(4).active {
-  color: #009b3a;
+  color: #2980b9;
 }
 .button-bar a:nth-child(5).active {
-  color: #009b3a !important;
+  color: #2980b9 !important;
 }
 .button-bar a {
   padding-top: 3px;
@@ -45,7 +45,7 @@ html {
 }
 .header-card {
   height: 64px;
-  background: #009b3a !important;
+  background: #2980b9 !important;
 }
 
 @media (min-width: 768px) {
@@ -353,7 +353,7 @@ body .content {
   font-size: 2rem;
   line-height: 3rem;
   font-weight: 600;
-  background-color: #dc3545;
+  background-color: #de5354;
   color: #fff;
 }
 

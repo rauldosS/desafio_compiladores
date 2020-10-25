@@ -1,0 +1,233 @@
+{% extends "base/index.html" %}
+{% block titulo %}Conversão numérica{% endblock %}
+
+{% block conteudo %}
+<div class="container mt-3">
+    <div class='shadow md-shadow-none rounded-lg h-100 overflow-hidden'>
+        <div class='h-100 overflow-y-auto p-3'>
+            <div class='p-2 d-flex'>
+                <h1 class='p-1 m-3 '><i class="fas fa-sort-numeric-down"></i></h1>
+                <span class='font-weight-normal my-auto' style='font-size: 1.5rem; width: 80%;'>Conversão numérica</span>
+                <div class="d-flex flex-end w-100">
+                    <a href="http://127.0.0.1:8000/admin/desafio/numeros/add/" class="dot shadow-medium text-center bg-primary text-white item"><i class="fas fa-plus"></i></a>
+                </div>
+            </div>
+
+            <form class="p-3" action="">
+                <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col" style="width: 130px">Entrada</th>
+                        <th scope="col" class="text-right">Inteiro</th>
+                        <th scope="col" class="text-right">Decimal</th>
+                        <th scope="col" class="text-right">ASCII</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tabela-numeros">
+                        {% for numero in numeros %}
+                        <tr id="numero{{ numero.id }}">
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>
+                                <select id="selecao{{ numero.id }}" class="form-control" onchange="selecionarConversao(this)">
+                                    <option value="inteiro">Inteiro</option>
+                                    <option value="decimal">Decimal</option>
+                                    <option value="ascii">ASCII</option>
+                                </select>
+                            </td>
+                            <td><input type="number" oninput="converterNumero('numero{{ numero.id }}', 'inteiro')" value='{{ numero.inteiro }}' class="form-control text-right" placeholder="Número inteiro"></td>
+                            <td><input type="number" oninput="converterNumero('numero{{ numero.id }}', 'decimal')" step="any" value='{{ numero.decimal }}' class="form-control text-right" placeholder="Número decimal" disabled></td>
+                            <td><input type="text" oninput="converterNumero('numero{{ numero.id }}', 'ascii')" value='{{ numero.asci }}' class="form-control text-right" placeholder="Número decimal" disabled></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="p-3 text-right">
+                    <a onclick="adicionar_numero()" class="btn bg-primary text-white" style="min-width: 141px;"><i class="fas fa-plus text-white"></i><a>
+                </div>
+                
+                <div class="p-3 text-right">
+                    <a onclick="" class="btn btn-success text-white">Atualizar valores</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    class numeros {
+        
+    }
+
+    adicionar_numero = () => {
+        const tabela = document.querySelector('#tabela-numeros')
+        const tr = document.createElement('tr')
+        const th = document.createElement('th')
+        let input = document.createElement('input')
+        let td = document.createElement('td')
+        let select = document.createElement('select')
+            
+        const opcoes = ['Inteiro', 'Decimal', 'ASCII']
+
+        th.setAttribute('scope', 'row')
+        th.textContent = '+'
+
+        tr.appendChild(th)
+
+        select.setAttribute('class', 'form-control')
+        opcoes.forEach(opcao => {
+            if (opcao != 'Número') {
+                let option = document.createElement('option')
+                option.textContent = opcao
+                select.appendChild(option)
+            }
+        })
+        
+        td.appendChild(select)
+        tr.appendChild(td)
+
+        opcoes.forEach(coluna => {
+            let td = document.createElement('td')
+            let input = document.createElement('input')
+
+            input.setAttribute('type', 'number')
+            if (coluna != 'Inteiro') {
+                input.setAttribute('disabled', 'true')
+            }
+
+            if (coluna == 'Decimal') {
+                input.setAttribute('step', 'any')
+            }
+
+            input.setAttribute('class', 'form-control text-right')
+            input.setAttribute('placeholder', coluna)
+                td.appendChild(input)
+                tr.appendChild(td)
+        })
+
+        tabela.appendChild(tr)
+    }
+
+    selecionarConversao = (el) => {
+        let opcaoSelecionada = document.getElementById(el.id)
+        let valorSelecionado = opcaoSelecionada.options[opcaoSelecionada.selectedIndex].value
+        let inputInteiro = document.getElementById(el.id.replace('selecao', 'numero')).children[2].firstElementChild
+        let inputDecimal = document.getElementById(el.id.replace('selecao', 'numero')).children[3].firstElementChild
+        let inputASCII = document.getElementById(el.id.replace('selecao', 'numero')).children[4].firstElementChild
+
+        if (valorSelecionado == 'inteiro') {
+            inputInteiro.removeAttribute('disabled')
+            inputDecimal.setAttribute('disabled', 'true')
+            inputASCII.setAttribute('disabled', 'true')
+        } else if (valorSelecionado == 'decimal') {
+            inputInteiro.setAttribute('disabled', 'true')
+            inputDecimal.removeAttribute('disabled')
+            inputASCII.setAttribute('disabled', 'true')
+        } else {
+            inputInteiro.setAttribute('disabled', 'true')
+            inputDecimal.setAttribute('disabled', 'true')
+            inputASCII.removeAttribute('disabled')
+        }
+    }
+
+    converterNumero = (id, conversao) => {
+        let inputInteiro = document.getElementById(id.replace('selecao', 'numero')).children[2].firstElementChild
+        let inputDecimal = document.getElementById(id.replace('selecao', 'numero')).children[3].firstElementChild
+        let inputASCII = document.getElementById(id.replace('selecao', 'numero')).children[4].firstElementChild
+        
+        if (conversao == 'inteiro') {
+            converterInteiro(inputDecimal, inputASCII, inputInteiro.value)
+        } else if (conversao == 'decimal') {
+            converterDecimal(inputInteiro, inputASCII, inputDecimal.value)
+        } else {
+            converterASCII(inputInteiro, inputDecimal, inputASCII.value)
+        }
+    }
+
+    converterInteiro = (inputDecimal, inputASCII, valor) => {
+        inputDecimal.value = (valor/100).toFixed(2)
+        inputASCII.value = inteiroParaASCII(valor)
+    }
+
+    converterDecimal = (inputInteiro, inputASCII, valor) => {
+        inputInteiro.value = parseInt(valor)
+        inputASCII.value = inteiroParaASCII(valor)
+    }
+
+    converterASCII = (inputInteiro, inputDecimal, valor) => {
+        inputInteiro.value = ASCIIParaInteiro(valor)
+        inputDecimal.value = (ASCIIParaInteiro(valor)/100).toFixed(2)
+    }
+
+    ASCIIParaInteiro = (valor) => {
+        let digitos = valor.split(' ')
+        inteiros = []
+        valorInteiro = ''
+        
+        digitos.forEach(digito => {
+            inteiros.push(String.fromCharCode(digito))
+            valorInteiro += String.fromCharCode(digito)
+        })
+
+        return valorInteiro
+    }
+
+    inteiroParaASCII = (valor) => {
+        let digitos = valor.toString().split('')
+        let digitosInteiros = digitos.map(Number)
+        let digitosASII = []
+        let valorASCII = ''
+        
+        digitos.forEach(digito => {
+            digitosASII.push(digito.charCodeAt(0))
+            valorASCII += digito.charCodeAt(0) + ' '
+        })
+
+        return valorASCII
+    }
+
+    atualizar_arquivo = (id_arquivo) => {
+        var xhttp = new XMLHttpRequest()
+
+        xhttp.open("POST", "/atualizar_arquivo_completo/", true)
+
+        xhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+        xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+        xhttp.setRequestHeader("X-CSRFToken", getCookie('csrftoken'))
+
+        xhttp.responseType = 'json'
+        // xhttp.onreadystatechange = function(data) {
+        //     if (this.readyState == 4 && this.status == 200) {
+        //         let json = xhttp.response
+        //         if (json) {
+                    
+        //         }
+        //     }
+        // }
+
+        arquivo['titulo'] = document.getElementById('titulo').value
+        arquivo['conteudo'] = document.getElementById('conteudo').value
+
+        xhttp.send("arquivo=" + JSON.stringify(arquivo))
+    }
+
+    function getCookie(name) {
+        var cookieValue = null;
+
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

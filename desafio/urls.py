@@ -11,5 +11,6 @@ urlpatterns = [
    path('enviar_arquivo/', EnvioArquivo.as_view(), name='enviar_arquivo'),
    path('arquivo/<int:id>/', views.arquivo, name='arquivo'),
    path('decompor_arquivo/<int:id>/', views.decompor_arquivo, name='decompor_arquivo'),
-   path('atualizar_arquivo_completo/', views.atualizar_arquivo_completo, name='atualizar_arquivo_completo')
+   path('atualizar_arquivo_completo/', views.atualizar_arquivo_completo, name='atualizar_arquivo_completo'),
+   path('conversao_numerica/', views.conversao_numerica, name='conversao_numerica')
 ]

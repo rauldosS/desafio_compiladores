@@ -58,3 +58,17 @@ class Linhas(models.Model):
         verbose_name = 'Linha'
         verbose_name_plural = 'Linhas'
         ordering = ('id', 'linha')
+
+class Numeros(models.Model):
+    numero = models.CharField(max_length=999999)
+    inteiro = models.IntegerField()
+    decimal = models.DecimalField(max_digits=999999, decimal_places=2)
+    asci = models.CharField(max_length=999999)
+
+    def __str__(self):
+        return f'{self.id} - {self.numero} - {self.inteiro}'
+
+    class Meta:
+        verbose_name = 'Número'
+        verbose_name_plural = 'Números'
+        ordering = ('id', 'numero')

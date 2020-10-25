@@ -1,7 +1,7 @@
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import render, redirect
-from .models import ModelFormArquivo, Caracteres, Linhas, Palavras
+from .models import ModelFormArquivo, Caracteres, Linhas, Palavras, Numeros
 from .forms import FormularioArquivo
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView
 from django.db.models import Q
@@ -252,3 +252,18 @@ def referencias_cruzadas(arquivo):
     print(referencias)
 
     return referencias
+
+
+
+
+
+
+def conversao_numerica(request):
+    numeros = Numeros.objects.all()
+
+    dados = {
+        'titulo': 'Conversão numérica',
+        'numeros': numeros
+    }
+
+    return render(request, 'desafio/conversao_numerica.html', dados)
