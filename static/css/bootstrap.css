@@ -2619,7 +2619,7 @@
   .btn-deep-purple:hover {
     color: #fff;
     background-color: #0069d9;
-    border-color: #0062cc;
+    border-color: #2980b9;
   }
   
   .btn-deep-purple:focus, .btn-deep-purple.focus {
@@ -5236,7 +5236,7 @@
   
   a.badge-primary:hover, a.badge-primary:focus {
     color: #fff;
-    background-color: #0062cc;
+    background-color: #2980b9;
   }
   
   a.badge-primary:focus, a.badge-primary.focus {
@@ -6837,7 +6837,7 @@
   a.bg-primary:hover, a.bg-primary:focus,
   button.bg-primary:hover,
   button.bg-primary:focus {
-    background-color: #0062cc !important;
+    background-color: #2980b9 !important;
   }
   
   .bg-secondary {

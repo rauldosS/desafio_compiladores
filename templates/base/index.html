@@ -23,13 +23,42 @@
         <title>{% block titulo %}Desafio{% endblock %}</title>
     </head>
 </head>
-<body>
-    {% block breadcrumb %}
-    {% endblock %}
+<body class='h-100'>
+    <main class='w-100 d-flex  overflow-auto {% if not nobar %} no-bar  {% endif %}'>
+      <div class='h-100 shadow d-none d-lg-block d-xl-block bg-white' style='z-index: 10; max-width: 70px'>
+        <div class='container flex-column d-flex h-100 pt-2' style="place-content: center; height: 90vh !important;">
+          <ul class="d-flex flex-column pl-0 mb-0 ">
+            <a href='{% url "desafio:inicio" %}' data-content="Desafio" class="list-group-item list-group-item-action border-0 mt-1 mb-1 active"><i class="fas fa-home fa-2x text-theme"></i></a>
+            <a href='http://127.0.0.1:8000/admin/desafio/modelformarquivo/' data-content="Arquivos" class="list-group-item list-group-item-action border-0 mt-1 mb-1 "><i class="fas fa-home fa-2x text-theme"></i></a>
+            <a href='http://127.0.0.1:8000/admin/desafio/caracteres/' data-content="Caracteres" class="list-group-item list-group-item-action border-0 mt-1 mb-1 "><i class="fas fa-home fa-2x text-theme"></i></a>
+            <a href='http://127.0.0.1:8000/admin/desafio/palavras/' data-content="Palavras" class="list-group-item list-group-item-action border-0 mt-1 mb-1 "><i class="fas fa-home fa-2x text-theme"></i></a>
+            <a href='http://127.0.0.1:8000/admin/desafio/linhas/' data-content="Linhas" class="list-group-item list-group-item-action border-0 mt-1 mb-1 "><i class="fas fa-home fa-2x text-theme"></i></a>
+            <a href='http://127.0.0.1:8000/admin/' data-content="Admin" class="list-group-item list-group-item-action border-0 mt-1 mb-1 "><i class="fas fa-user-shield fa-2x text-theme"></i></a>
+          </ul>
+        </div>
+      </div>
+      <div class='d-flex flex-column flex-fill'>
+        <nav class='d-none d-lg-block d-xl-block bg-primary text-white   shadow' >
+          <div class='d-flex'>
+              <div class='flex-fill d-flex align-items-center '>
+                  <div class='flex-fill overflow-hidden'  style='height: 65px;'>
+                      <img src="" class='pt-1 pr-1' style='opacity: 0.6;margin-top: -20px;transform: rotate(20deg);height:280px;'>
+                  </div>
+                  <div class='flex-fill text-right d-flex pr-3'>
+                      <h3 class='my-auto d-block'>Sistema de Orçamento</h3>
+                      <img src="" class=' d-block ml-auto mb-1 pr-1' style='height:50px;'>
+                  </div>
+              </div>
+          </div>
+        </nav>
+        <div class='h-100 w-100 overflow-auto'>
+          {% block conteudo %}
+          {% endblock %}
+        </div>
+      </div>
+    </main>
 
-    {% block conteudo %}
-    {% endblock %}
-</body>
+  </body>
 
 {% block modal %}
 <!-- Block modal utilizado para importar modais -->

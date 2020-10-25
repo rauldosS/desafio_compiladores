@@ -1,7 +1,7 @@
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import render, redirect
-from .models import ModelFormArquivo, Caracteres, Linhas
+from .models import ModelFormArquivo, Caracteres, Linhas, Palavras
 from .forms import FormularioArquivo
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView
 from django.db.models import Q
@@ -37,6 +37,7 @@ def arquivo(request, id=1):
     caracteres = Caracteres.objects.filter(arquivo=arquivo_modelo, ativo=True).order_by('sequencia')
     caracteres_removidos = Caracteres.objects.filter(arquivo=arquivo_modelo, ativo=False).order_by('sequencia')
     linhas = Linhas.objects.filter(arquivo=arquivo_modelo).order_by('linha')
+    palavras = Palavras.objects.filter(arquivo=arquivo_modelo).order_by('sequencia')
 
     arquivo = open(str(arquivo_modelo.arquivo), 'r', encoding='utf-8-sig')
     conteudo = arquivo.read()
@@ -47,21 +48,27 @@ def arquivo(request, id=1):
         'conteudo': conteudo,
         'caracteres': caracteres,
         'linhas': linhas,
-        'caracteres_removidos': caracteres_removidos
+        'palavras': palavras,
+        'caracteres_removidos': caracteres_removidos,
+        'referencias_cruzadas': referencias_cruzadas(arquivo_modelo)
     }
 
     return render(request, 'desafio/arquivo/arquivo.html', dados)
 
 def decompor_arquivo(request, id=1):
     arquivo_modelo = ModelFormArquivo.objects.get(id=id)
-    caracteres_removidos = Caracteres.objects.filter(arquivo=arquivo_modelo, ativo=False).order_by('sequencia')
+
+    print('-'*50)
+    print(f'Decompondo arquivo { arquivo_modelo.titulo }')
+    print('-'*50)
     
     arquivo = open(str(arquivo_modelo.arquivo), 'r', encoding='utf-8-sig')
     conteudo = arquivo.read()
     arquivo.close()
 
     atualizar_arquivo(id, conteudo, arquivo_modelo.versao + 1)
-    decompor_caracteres(arquivo_modelo, conteudo, caracteres_removidos)
+    decompor_caracteres(arquivo_modelo, conteudo, [])
+    separar_palavras(arquivo_modelo, conteudo)
 
     atualizar_linhas(arquivo_modelo)
 
@@ -71,7 +78,11 @@ def atualizar_arquivo(id, conteudo, versao):
     try:
         registro = ModelFormArquivo.objects.get(id=id)
 
-        registro.conteudo = conteudo,
+        print('-'*50)
+        print(f'Atualizando arquivo { registro.titulo }')
+        print('-'*50)
+
+        registro.conteudo_refatorado = conteudo,
         registro.versao = versao
 
         registro.save()
@@ -79,45 +90,95 @@ def atualizar_arquivo(id, conteudo, versao):
         print('Erro ao atualizar arquivo')
 
 def decompor_caracteres(arquivo, conteudo, caracteres_removidos):
-    caracteres_arquivo_false = []
     for caractere in Caracteres.objects.filter(arquivo=arquivo, ativo=False):
-        print(f'Decompondo caractere: { caractere }')
-        caracteres_arquivo_false.append([caractere.sequencia, str(caractere.palavra)])
-
+        print(caractere)
+        caracteres_removidos.append(caractere.sequencia)
+            
     atualizar_caractere(Caracteres.objects.filter(arquivo=arquivo))
 
+    print('-'*50)
+    print(f'Decompondo caracteres do arquivo { arquivo.titulo }')
+    print('-'*50)
+
     sequencia = 1
-    for palavra in str.split(conteudo):
-        print(f'Decompondo palavra: { palavra }')
+    for caractere in conteudo:
+        print(f'Decompondo caractere: { caractere }')
         ativo = True
 
-        for caractere in caracteres_arquivo_false:
-            if (palavra in caractere[1] and sequencia == caractere[0]):
-                ativo = False
+        ascII = ''.join(str(ord(c)) for c in caractere)
+        print(f'Caractere \'{ caractere }\' convertido em ASCII: { ascII }')
 
-        ascII = ''.join(str(ord(c)) for c in palavra)
         registro = Caracteres.objects.create(
             arquivo = arquivo, 
-            caractere = ascII,
+            asci = ascII,
             sequencia = sequencia,
-            palavra = palavra,
+            caractere = caractere,
             ativo = ativo
         )
         sequencia += 1
 
-    if caracteres_removidos:
-        remover_caractere(caracteres_removidos, arquivo)
-    
-    # Deletar caracteres da versão 2
+    # Deletar caracteres da versões anteriores
     Caracteres.objects.filter(arquivo=arquivo, caractere='atualizado').delete()
+        
+    remover_caractere_selecionados(
+        Caracteres.objects.filter(arquivo=arquivo),
+        caracteres_removidos
+    )
+
+def separar_palavras(arquivo, conteudo):
+    print('-'*50)
+    print(f'Separando palavras do arquivo { arquivo.titulo }')
+    print('-'*50)
+
+    atualizar_palavra(Palavras.objects.filter(arquivo=arquivo))
+
+    sequencia = 1
+    for palavra in str.split(conteudo):
+        print(f'Separando palavra: { palavra }')
+
+        ascII = ''.join(str(ord(c)) for c in palavra)
+        registro = Palavras.objects.create(
+            arquivo = arquivo, 
+            sequencia = sequencia,
+            palavra = palavra
+        )
+        sequencia += 1
+    
+    # Deletar palavras de versões anteriores
+    Palavras.objects.filter(arquivo=arquivo, palavra='atualizado').delete()
 
 def atualizar_caractere(objetos):
+    print('-'*50)
+    print('Atualizando caracteres do arquivo')
+    print('-'*50)
     for caractere in objetos:
         print(f'Atualizando arquivo: { caractere }')
         caractere.caractere = 'atualizado'
         caractere.save()
 
+def atualizar_palavra(objetos):
+    print('-'*50)
+    print('Atualizando palavras do arquivo')
+    print('-'*50)
+    for palavra in objetos:
+        print(f'Atualizando arquivo: { palavra }')
+        palavra.palavra = 'atualizado'
+        palavra.save()
+
+def remover_caractere_selecionados(caracteres, caracteres_selecionados):
+    print('-'*50)
+    print(f'Caracteres que serão desativados: { caracteres_selecionados }')
+    print('-'*50)
+    for caractere in caracteres:
+        if caractere.sequencia in caracteres_selecionados:
+            caractere.ativo = False
+            caractere.save()
+            print(f'Caractere \'{ caractere.caractere }\' desativado')
+
 def remover_caractere(caracteres, arquivo):
+    print('-'*50)
+    print(f'Desativando caracteres do arquivo { arquivo.titulo }')
+    print('-'*50)
     caracteres_removidos = []
 
     for remover in caracteres:
@@ -130,6 +191,9 @@ def remover_caractere(caracteres, arquivo):
         print(caractere.save())
 
 def atualizar_linhas(arquivo):
+    print('-'*50)
+    print(f'Atualizando linhas do arquivo { arquivo.titulo }')
+    print('-'*50)
     Linhas.objects.filter(arquivo=arquivo).delete()
 
     with open(str(arquivo.arquivo), 'r', errors='replace', encoding='utf-8-sig') as a:
@@ -137,8 +201,7 @@ def atualizar_linhas(arquivo):
 
         contagem_linha = 1
         for linha in linhas:
-            print(f'Atualizando linhas: { linha }')
-            # print(f'Linha {contagem_linha}: {linha.strip()}')
+            print(f'Atualizando linha {contagem_linha}: {linha.strip()}')
 
             registro = Linhas.objects.create(
                 arquivo=arquivo,
@@ -155,26 +218,37 @@ def atualizar_arquivo_completo(request):
         json_arquivo = json.loads(request.POST.get('arquivo', ''))
         arquivo_modelo = ModelFormArquivo.objects.get(id=int(json_arquivo['id']))
         versao = arquivo_modelo.versao + 1
-        caracteres_removidos = json_arquivo['chips_selecionados']
+        chips_selecionados = json_arquivo['chips_selecionados']
 
         # Atualiza caracteres da nova versão
         arquivo = open(str(arquivo_modelo.arquivo), 'r', encoding='utf-8-sig')
         conteudo = arquivo.read()
         arquivo.close()
 
-        decompor_caracteres(arquivo_modelo, conteudo, caracteres_removidos)
-        # atualizar_linhas(arquivo_modelo)
-
-        # Atualiza arquivos
-        # atualizar_arquivo(int(json_arquivo['id'], json_arquivo['conteudo'], versao))
+        decompor_caracteres(arquivo_modelo, conteudo, chips_selecionados)
+        atualizar_linhas(arquivo_modelo)
 
         return redirect('desafio:arquivo', id=arquivo_modelo.id)
     
-
-def gerar_arquivo(arquivo):
+def refatorar_conteudo(arquivo):
     pass
 
-def arquivos_enviados(request):
-    arquivos = ModelFormArquivo.objects.all()
+def referencias_cruzadas(arquivo):
+    referencias = {}
 
-    return render(request, 'desafio/arquivos_enviados.html', {'arquivos': arquivos})
+    for palavra in Palavras.objects.filter(arquivo=arquivo).order_by('palavra'):
+        referencias.update({palavra.palavra: []})
+
+    # Se a referência contem alguma palavra desta linha, adiciona a linha ao array de referência
+    for referencia, linhas in referencias.items():
+        sequencia = 1
+        for linha in Linhas.objects.filter(arquivo=arquivo).order_by('linha'):
+            sequencia = linha.linha
+            palavras_linha = (str.split(linha.conteudo))
+
+            if referencia in palavras_linha:
+                referencias[referencia].append(sequencia)
+    
+    print(referencias)
+
+    return referencias

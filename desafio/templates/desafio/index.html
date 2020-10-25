@@ -1,15 +1,6 @@
 {% extends "base/index.html" %}
 {% block titulo %}Arquivo{% endblock %}
 
-{% block breadcrumb %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'desafio:inicio' %}">Início</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Arquivos enviados</li>
-    </ol>
-</nav>
-{% endblock %}
-
 {% block conteudo %}
 <div class="container">
     <div class='shadow md-shadow-none rounded-lg h-100 overflow-hidden'>
@@ -38,7 +29,7 @@
                 <div class="card">
                     <div class="card-body">
                       <h5 class="card-title text-truncate" style="width: 78%;">{{ arquivo.titulo }} <span class="badge badge-primary" style="position: absolute; right: 5%;">Versão {{ arquivo.versao }}</span></h5>
-                      <p class="card-text text-truncate">{% if arquivo.conteudo %}{{ arquivo.conteudo }}{% else %}Adicionar conteúdo{% endif %}</p>
+                      <textarea class="form-control mb-3" id="conteudo" rows="3" contenteditable="false">{% if arquivo.conteudo %}{{ arquivo.conteudo }}{% else %}Adicionar conteúdo{% endif %}</textarea>
                       <a href="{% url 'desafio:arquivo' arquivo.id|safe %}" class="btn btn-primary">Detalhes</a>
                     </div>
                 </div>

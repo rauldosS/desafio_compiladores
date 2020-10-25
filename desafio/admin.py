@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ModelFormArquivo, Caracteres, Linhas
+from .models import ModelFormArquivo, Caracteres, Linhas, Palavras
 
 # Register your models here.
 @admin.register(ModelFormArquivo)
@@ -7,10 +7,15 @@ class ArquivoAdmin(admin.ModelAdmin):
     list_display = ['id', 'titulo', 'versao']
 
 @admin.register(Caracteres)
-class ArquivoAdmin(admin.ModelAdmin):
-    list_display = ['id', 'arquivo', 'ativo', 'caractere', 'palavra', 'versao']
+class CaractereAdmin(admin.ModelAdmin):
+    list_display = ['id', 'arquivo', 'sequencia', 'ativo', 'asci', 'caractere', 'versao']
     list_filter = ['ativo', 'versao']
 
+@admin.register(Palavras)
+class PalavraAdmin(admin.ModelAdmin):
+    list_display = ['id', 'arquivo', 'sequencia', 'palavra', 'versao']
+    list_filter = ['arquivo', 'versao']
+
 @admin.register(Linhas)
-class ArquivoAdmin(admin.ModelAdmin):
+class LinhasAdmin(admin.ModelAdmin):
     list_display = ['id', 'arquivo', 'linha', 'versao']

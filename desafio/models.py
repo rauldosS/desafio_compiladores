@@ -5,6 +5,7 @@ class ModelFormArquivo(models.Model):
     titulo = models.CharField('Título', max_length=50)
     arquivo = models.FileField('Arquivo', upload_to='arquivos/', blank=False, null=False)
     conteudo = models.TextField('Conteudo', blank=True, null=True)
+    conteudo_refatorado = models.TextField('Conteúdo refatorado', blank=True, null=True)
     versao = models.IntegerField('Versao', default=1)
 
     def __str__(self):
@@ -17,10 +18,10 @@ class ModelFormArquivo(models.Model):
 
 class Caracteres(models.Model):
     arquivo = models.ForeignKey(ModelFormArquivo, default='1', on_delete=models.CASCADE)
-    caractere = models.CharField(max_length=999999)
+    asci = models.CharField(max_length=999999)
     ativo = models.BooleanField('Ativo', default=True)
     sequencia = models.IntegerField('Sequencia')
-    palavra = models.CharField(max_length=900)
+    caractere = models.CharField(max_length=900)
     versao = models.IntegerField('Versão', default=1)
 
     def __str__(self):
@@ -30,6 +31,19 @@ class Caracteres(models.Model):
         verbose_name = 'Caractere'
         verbose_name_plural = 'Caracteres'
         ordering = ('id', 'caractere')
+
+class Palavras(models.Model):
+    arquivo = models.ForeignKey(ModelFormArquivo, default='1', on_delete=models.CASCADE)
+    sequencia = models.IntegerField('Sequencia')
+    palavra = models.CharField(max_length=900)
+    versao = models.IntegerField('Versão', default=1)
+
+    def __str__(self):
+        return f'{self.id} - {self.arquivo} - {self.palavra}'
+
+    class Meta:
+        verbose_name = 'Caractere'
+        verbose_name_plural = 'Caracteres'
 
 class Linhas(models.Model):
     arquivo = models.ForeignKey(ModelFormArquivo, default='1', on_delete=models.CASCADE)

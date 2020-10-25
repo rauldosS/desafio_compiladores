@@ -1,18 +1,8 @@
 {% extends "base/index.html" %}
 {% block titulo %}Arquivo - {{ arquivo.titulo }}{% endblock %}
 
-{% block breadcrumb %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'desafio:inicio' %}">Início</a></li>
-      <li class="breadcrumb-item"><a href="{% url 'desafio:inicio' %}">Arquivos enviados</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Detalhes do Arquivo - {{ arquivo.titulo }}</li>
-    </ol>
-</nav>
-{% endblock %}
-
 {% block conteudo %}
-<div class="container mt-3 mb-3">
+<div class="container mt-3">
     <div class='shadow md-shadow-none rounded-lg h-100 overflow-hidden'>
         <div class='h-100 overflow-y-auto p-3'>
             <div class='p-2 d-flex border-bottom mb-2'>
@@ -40,18 +30,21 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="caracteresASCII">Caracteres ASCII (sequencia - caractere)</label>
+                    <label for="caracteresASCII">Caracteres ASCII (sequencia - ascii - caractere)</label>
                     <select multiple class="form-control" id="caracteresASCII">
                         {% for caractere in caracteres %}
-                        <option>{{ caractere.sequencia }} - {{ caractere.caractere }} - {{ caractere.palavra }}</option>
+                        <option>{{ caractere.sequencia }} - {{ caractere.asci }} - {{ caractere.caractere }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="form-group" contenteditable="true">
-                    <label for="conteudo">Conteúdo</label>
-                    <textarea class="form-control" id="conteudo" rows="3" contenteditable="true">{{ conteudo }}</textarea>
+                    <label for="conteudo">Conteúdo original</label>
+                    <textarea class="form-control" id="conteudo" rows="3" contenteditable="true" disabled>{{ conteudo }}</textarea>
                 </div>
-
+                <div class="form-group" contenteditable="true">
+                    <label for="conteudo">Conteúdo refatorado</label>
+                    <textarea class="form-control" id="conteudo" rows="3" contenteditable="true" disabled>{{ arquivo.conteudo_refatorado }}</textarea>
+                </div>
                 <div class="form-group">
                     <label for="caracteresASCII">Sequência de linhas (linha - conteúdo)</label>
                     <select multiple class="form-control" id="caracteresASCII">
@@ -61,12 +54,45 @@
                     </select>
                 </div>
 
-                <label for="caracteresASCII">Apagar caracteres</label>
+                <div class="form-group">
+                    <label for="caracteresASCII">Palavras</label>
+                    <div class="chips chips-placeholder">
+                        {% for palavra in palavras %}
+                            <div class="chip bg-primary text-white" tabindex="1">
+                                <span class="badge badge-light mr-1">{{ palavra.sequencia }}</span>{{ palavra.palavra }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="referencias_cruzadas">Referências cruzadas</label>
+                    <table class="table table-hover">
+                        <thead>
+                          <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Palavra</th>
+                            <th scope="col">Linhas</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                            {% for palavra, linhas in referencias_cruzadas.items %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ palavra }}</td>
+                                <td>{% for linha in linhas %} {{ linha }} {% endfor %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <label for="caracteresASCII">Caracteres em arquivo</label>
                 <div class="chips chips-placeholder">
                     {% for caractere in caracteres %}
                         <div class="chip" tabindex="1" id="chip{{ caractere.id|safe }}">
-                            {{ caractere.palavra }}
-                            <i class="fas fa-times" onclick="apagar_chip('chip{{ caractere.id|safe }}', '{{ caractere.sequencia|safe }}')"></i>
+                            {{ caractere.caractere }}
+                            <i class="fas fa-times ml-1" onclick="apagar_chip('chip{{ caractere.id|safe }}', '{{ caractere.sequencia|safe }}')"></i>
                         </div>
                     {% endfor %}
                 </div>
@@ -75,8 +101,8 @@
                 <div id="chips-removidos" class="chips chips-placeholder">
                     {% for caractere in caracteres_removidos %}
                         <div class="chip" tabindex="1" id="chip{{ caractere.id|safe }}">
-                            {{ caractere.palavra }}
-                            <i class="fas fa-times"></i>
+                            {{ caractere.caractere }}
+                            <i class="fas fa-plus ml-1"></i>
                         </div>
                     {% endfor %}
                 </div>
@@ -104,7 +130,7 @@
         const chip = document.getElementById(id_chip)
     
         const id = parseInt(id_chip.replace('chip', ''))
-        arquivo['chips_selecionados'].push([id, Number(sequencia)])
+        arquivo['chips_selecionados'].push(Number(sequencia))
         console.log(arquivo['chips_selecionados'])
         
         chip_removido(id_chip, chip.textContent)
