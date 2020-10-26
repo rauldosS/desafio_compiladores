@@ -60,7 +60,6 @@ class Linhas(models.Model):
         ordering = ('id', 'linha')
 
 class Numeros(models.Model):
-    numero = models.CharField(max_length=999999)
     inteiro = models.IntegerField()
     decimal = models.DecimalField(max_digits=999999, decimal_places=2)
     asci = models.CharField(max_length=999999)
@@ -71,4 +70,4 @@ class Numeros(models.Model):
     class Meta:
         verbose_name = 'Número'
         verbose_name_plural = 'Números'
-        ordering = ('id', 'numero')
+        ordering = ('id', 'inteiro')

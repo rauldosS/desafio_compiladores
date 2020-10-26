@@ -9,7 +9,7 @@
                 <h1 class='p-1 m-3 '><i class="fas fa-sort-numeric-down"></i></h1>
                 <span class='font-weight-normal my-auto' style='font-size: 1.5rem; width: 80%;'>Conversão numérica</span>
                 <div class="d-flex flex-end w-100">
-                    <a href="http://127.0.0.1:8000/admin/desafio/numeros/add/" class="dot shadow-medium text-center bg-primary text-white item"><i class="fas fa-plus"></i></a>
+                    <a href="http://127.0.0.1:9000/admin/desafio/numeros/add/" class="dot shadow-medium text-center bg-primary text-white item"><i class="fas fa-plus"></i></a>
                 </div>
             </div>
 
@@ -26,13 +26,13 @@
                     </thead>
                     <tbody id="tabela-numeros">
                         {% for numero in numeros %}
-                        <tr id="numero{{ numero.id }}">
+                        <tr id="numero{{ numero.id }}" sequence="{{ forloop.counter }}">
                             <th scope="row">{{ forloop.counter }}</th>
                             <td>
                                 <select id="selecao{{ numero.id }}" class="form-control" onchange="selecionarConversao(this)">
-                                    <option value="inteiro">Inteiro</option>
-                                    <option value="decimal">Decimal</option>
-                                    <option value="ascii">ASCII</option>
+                                    <option value="Inteiro">Inteiro</option>
+                                    <option value="Decimal">Decimal</option>
+                                    <option value="ASCII">ASCII</option>
                                 </select>
                             </td>
                             <td><input type="number" oninput="converterNumero('numero{{ numero.id }}', 'inteiro')" value='{{ numero.inteiro }}' class="form-control text-right" placeholder="Número inteiro"></td>
@@ -47,7 +47,7 @@
                 </div>
                 
                 <div class="p-3 text-right">
-                    <a onclick="" class="btn btn-success text-white">Atualizar valores</a>
+                    <a onclick="atualizar_numeros()" class="btn btn-success text-white">Atualizar valores</a>
                 </div>
             </form>
         </div>
@@ -57,14 +57,11 @@
 
 {% block script %}
 <script>
-    class numeros {
-        
-    }
-
     adicionar_numero = () => {
         const tabela = document.querySelector('#tabela-numeros')
         const tr = document.createElement('tr')
         const th = document.createElement('th')
+        let sequencia = parseInt(document.querySelector('#tabela-numeros').lastElementChild.getAttribute('sequence')) + 1
         let input = document.createElement('input')
         let td = document.createElement('td')
         let select = document.createElement('select')
@@ -72,21 +69,27 @@
         const opcoes = ['Inteiro', 'Decimal', 'ASCII']
 
         th.setAttribute('scope', 'row')
-        th.textContent = '+'
-
+        th.textContent = sequencia
         tr.appendChild(th)
 
-        select.setAttribute('class', 'form-control')
         opcoes.forEach(opcao => {
+            select.setAttribute('id', 'selecao' + sequencia)
+            select.setAttribute('class', 'form-control novo')
+            select.setAttribute('onchange', 'selecionarConversao(this)')
+
             if (opcao != 'Número') {
                 let option = document.createElement('option')
                 option.textContent = opcao
+                option.setAttribute('value', opcao)
                 select.appendChild(option)
             }
         })
         
         td.appendChild(select)
         tr.appendChild(td)
+        tr.setAttribute('id', 'novo_numero' + sequencia)
+        tr.setAttribute('sequence', sequencia)
+        tr.setAttribute('class', 'novo')
 
         opcoes.forEach(coluna => {
             let td = document.createElement('td')
@@ -112,16 +115,18 @@
 
     selecionarConversao = (el) => {
         let opcaoSelecionada = document.getElementById(el.id)
+        let id = opcaoSelecionada.classList.contains('novo') ? el.id.replace('novo_numero', 'selecao') : el.id.replace('numero', 'selecao')
+        
         let valorSelecionado = opcaoSelecionada.options[opcaoSelecionada.selectedIndex].value
-        let inputInteiro = document.getElementById(el.id.replace('selecao', 'numero')).children[2].firstElementChild
-        let inputDecimal = document.getElementById(el.id.replace('selecao', 'numero')).children[3].firstElementChild
-        let inputASCII = document.getElementById(el.id.replace('selecao', 'numero')).children[4].firstElementChild
+        let inputInteiro = document.getElementById(id).parentElement.parentElement.children[2].firstElementChild
+        let inputDecimal = document.getElementById(id).parentElement.parentElement.children[3].firstElementChild
+        let inputASCII = document.getElementById(id).parentElement.parentElement.children[4].firstElementChild
 
-        if (valorSelecionado == 'inteiro') {
+        if (valorSelecionado == 'Inteiro') {
             inputInteiro.removeAttribute('disabled')
             inputDecimal.setAttribute('disabled', 'true')
             inputASCII.setAttribute('disabled', 'true')
-        } else if (valorSelecionado == 'decimal') {
+        } else if (valorSelecionado == 'Decimal') {
             inputInteiro.setAttribute('disabled', 'true')
             inputDecimal.removeAttribute('disabled')
             inputASCII.setAttribute('disabled', 'true')
@@ -186,6 +191,45 @@
         })
 
         return valorASCII
+    }
+
+    cadastrar_numeros = () => {
+        const numeros = document.querySelectorAll('tr')
+
+        let numeros_cadastro = []
+
+        class Numero {
+            constructor(id, inteiro, decimal, ascii) {
+                this.id = id
+                this.inteiro = inteiro
+                this.decimal = decimal
+                this.ascii = ascii
+            }
+        }
+
+        numeros.forEach((numero, index) => {
+            if (index > 0) {
+                let id = numero.id.replace('numero', '')
+                let inteiro = numero.children[2].firstElementChild.value
+                let decimal = numero.children[3].firstElementChild.value
+                let ascii = numero.children[4].firstElementChild.value
+
+                let novo_numero = new Numero(
+                    id,
+                    inteiro,
+                    decimal,
+                    ascii
+                )
+
+                numeros_cadastro.push(novo_numero)
+            }
+        })
+
+        return numeros_cadastro
+    }
+
+    atualizar_numeros = () => {
+        console.log(cadastrar_numeros())
     }
 
     atualizar_arquivo = (id_arquivo) => {

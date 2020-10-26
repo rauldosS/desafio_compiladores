@@ -22,4 +22,4 @@ class LinhasAdmin(admin.ModelAdmin):
 
 @admin.register(Numeros)
 class Número(admin.ModelAdmin):
-    list_display = ['id', 'numero', 'inteiro', 'decimal']
+    list_display = ['id', 'inteiro', 'decimal']

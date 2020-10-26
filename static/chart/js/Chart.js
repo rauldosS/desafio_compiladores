@@ -13954,7 +13954,7 @@ var INTERVALS = {
 	},
 	week: {
 		common: false,
-		size: 604800000,
+		size: 604900000,
 		steps: 4
 	},
 	month: {
