@@ -18,11 +18,11 @@ function getCookie(name) {
 /* ==> Hyperlinks ============================================================== */
 
 updateExpense = (id) => {
-    window.open('http://127.0.0.1:9000/admin/expense/expense/' + id + '/change/', '_blank')
+    window.open('http://127.0.0.1:8000/admin/expense/expense/' + id + '/change/', '_blank')
 }
 
 updateParcelExpense = (id) => {
-    window.open('http://127.0.0.1:9000/admin/expense/parcel/' + id + '/change/', '_blank')
+    window.open('http://127.0.0.1:8000/admin/expense/parcel/' + id + '/change/', '_blank')
 }
 
 /* ==> Calculator ============================================================== */

@@ -9,7 +9,7 @@
                 <h1 class='p-1 m-3 '><i class="fas fa-sort-numeric-down"></i></h1>
                 <span class='font-weight-normal my-auto' style='font-size: 1.5rem; width: 80%;'>Conversão numérica</span>
                 <div class="d-flex flex-end w-100">
-                    <a href="http://127.0.0.1:9000/admin/desafio/numeros/add/" class="dot shadow-medium text-center bg-primary text-white item"><i class="fas fa-plus"></i></a>
+                    <a href="http://127.0.0.1:8000/admin/desafio/numeros/add/" class="dot shadow-medium text-center bg-primary text-white item"><i class="fas fa-plus"></i></a>
                 </div>
             </div>
 
@@ -87,7 +87,7 @@
         
         td.appendChild(select)
         tr.appendChild(td)
-        tr.setAttribute('id', 'novo_numero' + sequencia)
+        tr.setAttribute('id', 'numero' + sequencia)
         tr.setAttribute('sequence', sequencia)
         tr.setAttribute('class', 'novo')
 
@@ -95,14 +95,27 @@
             let td = document.createElement('td')
             let input = document.createElement('input')
 
-            input.setAttribute('type', 'number')
+            if (coluna == 'Inteiro') {
+                input.setAttribute('oninput', `converterNumero('numero${sequencia}', 'inteiro')`)
+                input.setAttribute('type', 'number')
+            }
+
             if (coluna != 'Inteiro') {
                 input.setAttribute('disabled', 'true')
             }
 
             if (coluna == 'Decimal') {
+                input.setAttribute('type', 'number')
                 input.setAttribute('step', 'any')
+                input.setAttribute('oninput', `converterNumero('numero${sequencia}', 'decimal')`)
             }
+
+            if (coluna == 'ASCII') {
+                input.setAttribute('type', 'text')
+                input.setAttribute('oninput', `converterNumero('numero${sequencia}', 'ascii')`)
+            }
+
+            input.setAttribute('placeholder', 'Número inteiro')
 
             input.setAttribute('class', 'form-control text-right')
             input.setAttribute('placeholder', coluna)
@@ -137,10 +150,10 @@
         }
     }
 
-    converterNumero = (id, conversao) => {
-        let inputInteiro = document.getElementById(id.replace('selecao', 'numero')).children[2].firstElementChild
-        let inputDecimal = document.getElementById(id.replace('selecao', 'numero')).children[3].firstElementChild
-        let inputASCII = document.getElementById(id.replace('selecao', 'numero')).children[4].firstElementChild
+    converterNumero = (id_numero, conversao) => {
+        const inputInteiro = document.getElementById(id_numero).children[2].firstElementChild
+        const inputDecimal = document.getElementById(id_numero).children[3].firstElementChild
+        const inputASCII = document.getElementById(id_numero).children[4].firstElementChild
         
         if (conversao == 'inteiro') {
             converterInteiro(inputDecimal, inputASCII, inputInteiro.value)

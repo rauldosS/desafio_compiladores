@@ -96,8 +96,8 @@
                     </table>
                 </div>
 
-                <label for="caracteresASCII">Caracteres em arquivo</label>
-                <div class="chips chips-placeholder">
+                <label for="caracteresASCII">Caracteres habilitadas</label>
+                <div id="chips_ativados" class="chips chips-placeholder">
                     {% for caractere in caracteres %}
                         <div class="chip" tabindex="1" id="chip{{ caractere.id|safe }}">
                             {{ caractere.caractere }}
@@ -106,12 +106,12 @@
                     {% endfor %}
                 </div>
 
-                <label for="caracteresASCII">Caracteres removidos</label>
-                <div id="chips-removidos" class="chips chips-placeholder">
+                <label for="caracteresASCII">Caracteres desabilitados</label>
+                <div id="chips_desativados" class="chips chips-placeholder">
                     {% for caractere in caracteres_removidos %}
                         <div class="chip" tabindex="1" id="chip{{ caractere.id|safe }}">
                             {{ caractere.caractere }}
-                            <i class="fas fa-plus ml-1"></i>
+                            <i class="fas fa-plus ml-1" onclick="adicionar_chip('chip{{ caractere.id|safe }}', '{{ caractere.sequencia|safe }}')"></i>
                         </div>
                     {% endfor %}
                 </div>
@@ -139,27 +139,50 @@
         const chip = document.getElementById(id_chip)
     
         const id = parseInt(id_chip.replace('chip', ''))
-        arquivo['chips_selecionados'].push(Number(sequencia))
+        arquivo['chips_selecionados'].push(['remover', Number(sequencia)])
         console.log(arquivo['chips_selecionados'])
         
-        chip_removido(id_chip, chip.textContent)
-        chip.style.display = 'none'
+        chip_removido(id_chip, chip.textContent, sequencia, 'remover')
+        chip.remove()
     }
 
-    chip_removido = (id, valor) => {
-        const chips_removidos = document.getElementById('chips-removidos')
+    adicionar_chip = (id_chip, sequencia) => {
+        const chip = document.getElementById(id_chip)
+    
+        const id = parseInt(id_chip.replace('chip', ''))
+        arquivo['chips_selecionados'].push(['adicionar', Number(sequencia)])
+        console.log(arquivo['chips_selecionados'])
+        
+        chip_removido(id_chip, chip.textContent, sequencia, 'adicionar')
+        chip.remove()
+    }
+
+    chip_removido = (id, valor, sequencia, operacao) => {
         const div = document.createElement('div')
         const i = document.createElement('i')
 
         div.setAttribute('class', 'chip')
         div.setAttribute('tabindex', '1')
-        div.setAttribute('id', `chip-{id}`)
+        div.setAttribute('id', id)
         div.textContent = valor
 
-        i.setAttribute('class', 'fas fa-plus')
-        
-        div.append(i)
-        chips_removidos.append(div)
+        if (operacao == 'adicionar') {
+            const chips_ativos = document.getElementById('chips_ativados')
+            
+            i.setAttribute('class', 'fas fa-times')
+            i.setAttribute('onclick', 'apagar_chip("' + id + '", "' + sequencia + '")')
+            
+            div.append(i)
+            chips_ativos.append(div)
+        } else {
+            const chips_desativados = document.getElementById('chips_desativados')
+            
+            i.setAttribute('class', 'fas fa-plus')
+            i.setAttribute('onclick', 'adicionar_chip("' + id + '", "' + sequencia + '")')
+            
+            div.append(i)
+            chips_desativados.append(div)
+        }
     }
 
     atualizar_arquivo = (id_arquivo) => {

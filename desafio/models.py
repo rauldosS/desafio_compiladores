@@ -42,8 +42,8 @@ class Palavras(models.Model):
         return f'{self.id} - {self.arquivo} - {self.palavra}'
 
     class Meta:
-        verbose_name = 'Caractere'
-        verbose_name_plural = 'Caracteres'
+        verbose_name = 'Palavra'
+        verbose_name_plural = 'Palavras'
 
 class Linhas(models.Model):
     arquivo = models.ForeignKey(ModelFormArquivo, default='1', on_delete=models.CASCADE)
@@ -65,9 +65,43 @@ class Numeros(models.Model):
     asci = models.CharField(max_length=999999)
 
     def __str__(self):
-        return f'{self.id} - {self.numero} - {self.inteiro}'
+        return f'{self.id} - {self.inteiro}'
 
     class Meta:
         verbose_name = 'Número'
         verbose_name_plural = 'Números'
         ordering = ('id', 'inteiro')
+
+class Simbolos(models.Model):
+    simbolo = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f'{self.simbolo}'
+
+    class Meta:
+        verbose_name = 'Simbolo'
+        verbose_name_plural = 'Simbolo'
+        ordering = ('id', 'simbolo')
+
+class Atributos(models.Model):
+    atributo = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f'{self.atributo}'
+
+    class Meta:
+        verbose_name = 'Atributo'
+        verbose_name_plural = 'Atributos'
+        ordering = ('id', 'atributo')
+
+class AssociacaoSimboloAtributo(models.Model):
+    simbolo = models.ForeignKey(Simbolos, on_delete=models.CASCADE)
+    atributo = models.ForeignKey(Atributos, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.simbolo} - {self.atributo}'
+
+    class Meta:
+        verbose_name = 'Associação símbolo/atributo'
+        verbose_name_plural = 'Associação símbolos/atributos'
+        ordering = ('id', 'simbolo', 'atributo')

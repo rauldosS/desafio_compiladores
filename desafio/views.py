@@ -120,7 +120,7 @@ def decompor_caracteres(arquivo, conteudo, caracteres_removidos):
     # Deletar caracteres da versões anteriores
     Caracteres.objects.filter(arquivo=arquivo, caractere='atualizado').delete()
         
-    remover_caractere_selecionados(
+    atualizar_caracteres_selecionados(
         Caracteres.objects.filter(arquivo=arquivo),
         caracteres_removidos
     )
@@ -165,15 +165,27 @@ def atualizar_palavra(objetos):
         palavra.palavra = 'atualizado'
         palavra.save()
 
-def remover_caractere_selecionados(caracteres, caracteres_selecionados):
+def atualizar_caracteres_selecionados(caracteres, caracteres_selecionados):
     print('-'*50)
-    print(f'Caracteres que serão desativados: { caracteres_selecionados }')
+    print(f'Caracteres que serão atualizados: { caracteres_selecionados }')
     print('-'*50)
+
+    selecionados = []
+    for caractere in caracteres_selecionados:
+        selecionados.append(caractere[1])
+
+    index = 0
     for caractere in caracteres:
-        if caractere.sequencia in caracteres_selecionados:
-            caractere.ativo = False
+        if caractere.sequencia in selecionados:
+            print(caracteres_selecionados[index][0])
+            if caracteres_selecionados[index][0] == 'adicionar':
+                caractere.ativo = True
+            else:
+                caractere.ativo = False
             caractere.save()
+
             print(f'Caractere \'{ caractere.caractere }\' desativado')
+            index += 1
 
 def remover_caractere(caracteres, arquivo):
     print('-'*50)
@@ -236,10 +248,16 @@ def refatorar_conteudo(arquivo):
 def referencias_cruzadas(arquivo):
     referencias = {}
 
+    # {
+    #     'A': [1, 2, 3]
+    # }
+
+    # Percorrer todas as palavras do arquivo e armazenalas em um array de referencia da palavra
     for palavra in Palavras.objects.filter(arquivo=arquivo).order_by('palavra'):
         referencias.update({palavra.palavra: []})
 
-    # Se a referência contem alguma palavra desta linha, adiciona a linha ao array de referência
+    # Se a referência contem alguma palavra desta linha,
+    # adiciona a linha ao array de referência
     for referencia, linhas in referencias.items():
         sequencia = 1
         for linha in Linhas.objects.filter(arquivo=arquivo).order_by('linha'):
@@ -248,8 +266,6 @@ def referencias_cruzadas(arquivo):
 
             if referencia in palavras_linha:
                 referencias[referencia].append(sequencia)
-    
-    print(referencias)
 
     return referencias
 
